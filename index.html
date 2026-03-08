@@ -928,15 +928,30 @@
 // ── SCROLL REVEAL ──────────────────────────────────────────────────────────
 (function() {
   const revealEls = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach(el => observer.observe(el));
+
+  function revealEl(el) {
+    el.classList.add('visible');
+  }
+
+  // Fallback: force-reveal all elements after 2s in case observer misses them
+  setTimeout(() => {
+    revealEls.forEach(revealEl);
+  }, 2000);
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          revealEl(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => observer.observe(el));
+  } else {
+    // No IntersectionObserver support — just show everything
+    revealEls.forEach(revealEl);
+  }
 })();
 </script>
 </body>
