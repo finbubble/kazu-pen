@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kazu Pen — Write Your Legacy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --dark: #080808;
+      --dark2: #0f0f0f;
+      --dark3: #161616;
+      --gray: #a0a0a0;
+      --white: #f5f5f5;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--dark);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS ── */
+    #hero-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 60px;
+      background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+    }
+    .nav-logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a {
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 10px 24px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+    }
+    .nav-cta:hover { background: var(--gold); color: var(--dark); }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 20px 80px;
+    }
+    .hero-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.3s forwards;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 9vw, 120px);
+      font-weight: 700;
+      line-height: 1.0;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.5s forwards;
+    }
+    .hero-title span {
+      display: block;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: clamp(14px, 2vw, 18px);
+      color: var(--gray);
+      max-width: 540px;
+      line-height: 1.8;
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.7s forwards;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.9s forwards;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--dark);
+      padding: 16px 40px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(201,168,76,0.35);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      padding: 16px 40px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.5s forwards;
+    }
+    .scroll-hint span { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); }
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease infinite;
+    }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      position: relative;
+      z-index: 1;
+      background: var(--gold);
+      padding: 14px 0;
+      overflow: hidden;
+    }
+    .marquee-track {
+      display: flex;
+      white-space: nowrap;
+      animation: marquee 18s linear infinite;
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 32px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--dark);
+    }
+    .marquee-dot { width: 4px; height: 4px; background: var(--dark); border-radius: 50%; }
+
+    /* ── SECTION BASE ── */
+    section {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── FEATURES ── */
+    #features {
+      background: var(--dark2);
+      padding: 120px 60px;
+    }
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 64px;
+      max-width: 600px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2px;
+    }
+    .feature-card {
+      background: var(--dark3);
+      padding: 48px 36px;
+      transition: background 0.3s;
+    }
+    .feature-card:hover { background: #1c1c1c; }
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 24px;
+    }
+    .feature-icon svg { width: 100%; height: 100%; }
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--white);
+    }
+    .feature-desc {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--gray);
+    }
+
+    /* ── SPECS ── */
+    #specs {
+      background: var(--dark);
+      padding: 120px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .specs-visual {
+      position: relative;
+      height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #pen-canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 2px;
+    }
+    .specs-list { display: flex; flex-direction: column; gap: 0; }
+    .spec-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .spec-item:first-child { border-top: 1px solid rgba(255,255,255,0.06); }
+    .spec-label { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); }
+    .spec-value { font-size: 15px; font-weight: 600; color: var(--white); }
+    .spec-value.gold { color: var(--gold); }
+
+    /* ── TESTIMONIALS ── */
+    #testimonials {
+      background: var(--dark3);
+      padding: 120px 60px;
+      text-align: center;
+    }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 64px;
+    }
+    .testimonial-card {
+      background: var(--dark2);
+      padding: 40px 32px;
+      text-align: left;
+      border-top: 2px solid var(--gold);
+    }
+    .stars { color: var(--gold); font-size: 14px; margin-bottom: 20px; letter-spacing: 2px; }
+    .testimonial-text { font-size: 15px; line-height: 1.8; color: var(--gray); margin-bottom: 24px; font-style: italic; }
+    .testimonial-author { font-size: 13px; font-weight: 600; color: var(--white); }
+    .testimonial-role { font-size: 12px; color: var(--gold); margin-top: 4px; }
+
+    /* ── CTA ── */
+    #cta {
+      background: var(--dark);
+      padding: 140px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .cta-sub { font-size: 16px; color: var(--gray); margin-bottom: 48px; }
+    .price-display {
+      display: inline-block;
+      margin-bottom: 40px;
+    }
+    .price-from { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); }
+    .price-amount {
+      font-size: clamp(48px, 8vw, 80px);
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .price-sub { font-size: 13px; color: var(--gray); margin-top: 4px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark2);
+      padding: 40px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-logo { font-size: 18px; font-weight: 700; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 0.7; }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* ── REVEAL ON SCROLL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      .nav-links { display: none; }
+      #features, #testimonials, #cta { padding: 80px 24px; }
+      #specs { grid-template-columns: 1fr; padding: 80px 24px; gap: 40px; }
+      .specs-visual { height: 300px; }
+      footer { flex-direction: column; gap: 12px; text-align: center; padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Background particle canvas -->
+<canvas id="hero-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Kazu</div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#specs">Specs</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+  </ul>
+  <button class="nav-cta">Order Now</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow">Introducing Kazu Pen — Limited Edition 2026</p>
+  <h1 class="hero-title">
+    Write Your<br/><span>Legacy.</span>
+  </h1>
+  <p class="hero-sub">
+    Precision-engineered ballpoint perfection. Every curve crafted. Every line effortless. The last pen you'll ever need.
+  </p>
+  <div class="hero-buttons">
+    <button class="btn-primary">Shop Now — $49</button>
+    <button class="btn-secondary">Watch Film</button>
+  </div>
+  <div class="scroll-hint">
+    <span>Discover</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee-track">
+    <span class="marquee-item">Precision Ballpoint<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Ergonomic Grip<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Ink Never Skips<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Premium Brass Body<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Refillable<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Lifetime Warranty<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Precision Ballpoint<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Ergonomic Grip<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Ink Never Skips<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Premium Brass Body<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Refillable<span class="marquee-dot"></span></span>
+    <span class="marquee-item">Lifetime Warranty<span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <p class="section-label reveal">Why Kazu</p>
+  <h2 class="section-title reveal">Engineered for those who demand more.</h2>
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 40L16 8L40 32L28 36L8 40Z" stroke="#c9a84c" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="28" cy="20" r="4" stroke="#c9a84c" stroke-width="2"/>
+        </svg>
+      </div>
+      <h3 class="feature-title">Zero-Skip Ink Flow</h3>
+      <p class="feature-desc">Our patented pressurized ink cartridge delivers a flawless, consistent line from the very first stroke to the very last drop. No blobs. No gaps. Ever.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="32" height="32" rx="4" stroke="#c9a84c" stroke-width="2"/>
+          <path d="M16 24H32M24 16V32" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3 class="feature-title">Aerospace-Grade Brass</h3>
+      <p class="feature-desc">The barrel is machined from solid brass alloy, giving Kazu its satisfying weight and a balance point that makes writing feel completely effortless.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="14" stroke="#c9a84c" stroke-width="2"/>
+          <path d="M24 14V24L30 30" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3 class="feature-title">Lasts 3x Longer</h3>
+      <p class="feature-desc">Each Kazu refill cartridge is engineered to outlast standard ballpoints by 3x — that's over 6,000 meters of smooth, continuous writing per fill.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 36C12 36 18 28 24 28C30 28 36 36 36 36" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+          <path d="M24 28V12" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="24" cy="10" r="3" stroke="#c9a84c" stroke-width="2"/>
+        </svg>
+      </div>
+      <h3 class="feature-title">Ergonomic Silicone Grip</h3>
+      <p class="feature-desc">A precision-molded silicone grip zone reduces hand fatigue during long writing sessions, so your ideas flow as long as your inspiration does.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 38L22 10L26 22L38 10" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="26" cy="22" r="3" fill="#c9a84c"/>
+        </svg>
+      </div>
+      <h3 class="feature-title">Fully Refillable</h3>
+      <p class="feature-desc">Kazu is built to last a lifetime. Standard-size D1 refills mean you're never locked into a proprietary system. Write forever, waste nothing.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 8L28.5 18.5H40L30.5 25L34 36L24 29.5L14 36L17.5 25L8 18.5H19.5L24 8Z" stroke="#c9a84c" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="feature-title">Lifetime Warranty</h3>
+      <p class="feature-desc">We stand behind every Kazu Pen unconditionally. If it ever fails, we replace it. No questions, no receipts, no expiry date. That's the Kazu promise.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SPECS -->
+<section id="specs">
+  <div class="specs-visual reveal">
+    <canvas id="pen-canvas"></canvas>
+  </div>
+  <div class="specs-content">
+    <p class="section-label reveal">Specifications</p>
+    <h2 class="section-title reveal">Every detail, dialed in.</h2>
+    <div class="specs-list reveal">
+      <div class="spec-item">
+        <span class="spec-label">Body Material</span>
+        <span class="spec-value gold">Aerospace Brass Alloy</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Tip Size</span>
+        <span class="spec-value">0.7mm Medium Point</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Ink Type</span>
+        <span class="spec-value">Oil-Based Ballpoint</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Length</span>
+        <span class="spec-value">143mm (5.6 inches)</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Weight</span>
+        <span class="spec-value gold">28g — Perfectly Balanced</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Refill Compatibility</span>
+        <span class="spec-value">Universal D1 Standard</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Ink Life</span>
+        <span class="spec-value">6,000m per cartridge</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Available Colors</span>
+        <span class="spec-value gold">Midnight / Gold / Smoke</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <p class="section-label reveal">Reviews</p>
+  <h2 class="section-title reveal" style="margin: 0 auto 0; text-align:center;">Writers love Kazu.</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"I've tried dozens of pens over the years. Kazu is on another level. The weight, the balance, the way it just glides — it actually makes me want to write more."</p>
+      <div class="testimonial-author">Mia Tanaka</div>
+      <div class="testimonial-role">Author & Journalist</div>
+    </div>
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"As an architect, precision matters. Kazu delivers incredibly clean, consistent lines. My sketches have never looked better. I bought three as backup."</p>
+      <div class="testimonial-author">Marcus Delaney</div>
+      <div class="testimonial-role">Principal Architect</div>
+    </div>
+    <div class="testimonial-card reveal">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"The grip is perfect for hours of note-taking. I used to get hand cramps — not anymore. Worth every single penny. This is my pen for life."</p>
+      <div class="testimonial-author">Priya Sharma</div>
+      <div class="testimonial-role">Medical Student</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <p class="section-label reveal">Limited Edition 2026</p>
+  <h2 class="cta-title reveal">Ready to write<br/><span style="background: linear-gradient(135deg,#c9a84c,#f0d080); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">your story?</span></h2>
+  <p class="cta-sub reveal">Free worldwide shipping. 30-day returns. Lifetime warranty.</p>
+  <div class="price-display reveal">
+    <div class="price-from">Starting from</div>
+    <div class="price-amount">$49</div>
+    <div class="price-sub">Free engraving on all orders</div>
+  </div>
+  <br/>
+  <div class="hero-buttons reveal">
+    <button class="btn-primary">Order Kazu Pen</button>
+    <button class="btn-secondary">See All Colors</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Kazu</div>
+  <div class="footer-copy">© 2026 Kazu Pen Co. All rights reserved.</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── BACKGROUND PARTICLE FIELD ──────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], mouse = { x: -9999, y: -9999 };
+  const GOLD = 'rgba(201,168,76,';
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function createParticles() {
+    particles = [];
+    const count = Math.floor((W * H) / 12000);
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.5 + 0.3,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        alpha: Math.random() * 0.5 + 0.1
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // subtle vignette
+    const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * 0.75);
+    grad.addColorStop(0, 'rgba(8,8,8,0)');
+    grad.addColorStop(1, 'rgba(8,8,8,0.6)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+      // mouse repel
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 120) {
+        p.x += dx / dist * 1.5;
+        p.y += dy / dist * 1.5;
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = GOLD + p.alpha + ')';
+      ctx.fill();
+    });
+
+    // draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = GOLD + (0.07 * (1 - dist/120)) + ')';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); createParticles(); });
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  resize(); createParticles(); draw();
+})();
+
+// ── 3D PEN (Three.js) ──────────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('pen-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+  camera.position.set(0, 0, 7);
+
+  function resize() {
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight || 480;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+  scene.add(ambientLight);
+
+  const keyLight = new THREE.DirectionalLight(0xffd080, 2.5);
+  keyLight.position.set(3, 4, 5);
+  keyLight.castShadow = true;
+  scene.add(keyLight);
+
+  const fillLight = new THREE.PointLight(0xc9a84c, 1.5, 20);
+  fillLight.position.set(-4, 2, 3);
+  scene.add(fillLight);
+
+  const rimLight = new THREE.DirectionalLight(0x4488ff, 0.8);
+  rimLight.position.set(-3, -1, -4);
+  scene.add(rimLight);
+
+  // Materials
+  const brassMat = new THREE.MeshStandardMaterial({
+    color: 0xb8932a,
+    metalness: 0.95,
+    roughness: 0.15,
+    envMapIntensity: 1.0
+  });
+  const darkMat = new THREE.MeshStandardMaterial({
+    color: 0x111111,
+    metalness: 0.8,
+    roughness: 0.3
+  });
+  const clipMat = new THREE.MeshStandardMaterial({
+    color: 0xd4a843,
+    metalness: 1.0,
+    roughness: 0.05
+  });
+  const gripMat = new THREE.MeshStandardMaterial({
+    color: 0x1a1a1a,
+    metalness: 0.1,
+    roughness: 0.85
+  });
+  const tipMat = new THREE.MeshStandardMaterial({
+    color: 0x888888,
+    metalness: 0.9,
+    roughness: 0.1
+  });
+
+  const penGroup = new THREE.Group();
+  scene.add(penGroup);
+
+  // ── PEN BODY (lathe profile) ──
+  const bodyPoints = [];
+  // tip cone
+  bodyPoints.push(new THREE.Vector2(0, -2.6));
+  bodyPoints.push(new THREE.Vector2(0.04, -2.5));
+  bodyPoints.push(new THREE.Vector2(0.12, -2.3));
+  bodyPoints.push(new THREE.Vector2(0.18, -2.0));
+  // grip section - slightly narrower
+  bodyPoints.push(new THREE.Vector2(0.22, -1.8));
+  bodyPoints.push(new THREE.Vector2(0.22, -1.2));
+  // slight waist
+  bodyPoints.push(new THREE.Vector2(0.24, -0.8));
+  // barrel - main body
+  bodyPoints.push(new THREE.Vector2(0.26, -0.4));
+  bodyPoints.push(new THREE.Vector2(0.265, 0.5));
+  bodyPoints.push(new THREE.Vector2(0.265, 1.5));
+  // shoulder
+  bodyPoints.push(new THREE.Vector2(0.24, 1.8));
+  bodyPoints.push(new THREE.Vector2(0.20, 2.0));
+  // cap top
+  bodyPoints.push(new THREE.Vector2(0.20, 2.4));
+  bodyPoints.push(new THREE.Vector2(0.15, 2.58));
+  bodyPoints.push(new THREE.Vector2(0, 2.6));
+
+  const bodyGeo = new THREE.LatheGeometry(bodyPoints, 64);
+  const body = new THREE.Mesh(bodyGeo, brassMat);
+  penGroup.add(body);
+
+  // ── GRIP SECTION (darker/textured) ──
+  const gripGeo = new THREE.CylinderGeometry(0.225, 0.225, 0.6, 32);
+  const grip = new THREE.Mesh(gripGeo, gripMat);
+  grip.position.y = -1.5;
+  penGroup.add(grip);
+
+  // Grip rings
+  for (let i = 0; i < 5; i++) {
+    const ringGeo = new THREE.TorusGeometry(0.228, 0.008, 8, 32);
+    const ring = new THREE.Mesh(ringGeo, clipMat);
+    ring.position.y = -1.25 - i * 0.12;
+    ring.rotation.x = Math.PI / 2;
+    penGroup.add(ring);
+  }
+
+  // ── TIP ──
+  const tipGeo = new THREE.CylinderGeometry(0.025, 0.01, 0.25, 16);
+  const tip = new THREE.Mesh(tipGeo, tipMat);
+  tip.position.y = -2.725;
+  penGroup.add(tip);
+
+  // ── CLIP ──
+  const clipShape = new THREE.Shape();
+  clipShape.moveTo(-0.04, 0);
+  clipShape.lineTo(0.04, 0);
+  clipShape.lineTo(0.035, 1.9);
+  clipShape.lineTo(-0.035, 1.9);
+  clipShape.closePath();
+
+  const clipExtrudeSettings = { depth: 0.04, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 3 };
+  const clipGeo = new THREE.ExtrudeGeometry(clipShape, clipExtrudeSettings);
+  const clip = new THREE.Mesh(clipGeo, clipMat);
+  clip.position.set(0.28, 0.3, 0);
+  penGroup.add(clip);
+
+  // Clip tip ball
+  const clipBallGeo = new THREE.SphereGeometry(0.055, 16, 16);
+  const clipBall = new THREE.Mesh(clipBallGeo, clipMat);
+  clipBall.position.set(0.3, 0.2, 0.02);
+  penGroup.add(clipBall);
+
+  // ── ENGRAVING BAND ──
+  const bandGeo = new THREE.TorusGeometry(0.268, 0.012, 8, 64);
+  const band1 = new THREE.Mesh(bandGeo, clipMat);
+  band1.rotation.x = Math.PI / 2;
+  band1.position.y = 1.85;
+  penGroup.add(band1);
+
+  const band2 = new THREE.Mesh(bandGeo.clone(), clipMat);
+  band2.rotation.x = Math.PI / 2;
+  band2.position.y = -1.95;
+  penGroup.add(band2);
+
+  // Tilt pen slightly
+  penGroup.rotation.z = 0.2;
+  penGroup.rotation.x = 0.1;
+
+  // ── REFLECTION ENVIRONMENT ──
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileEquirectangularShader();
+  const envScene = new THREE.RoomEnvironment();
+  const envTexture = pmremGenerator.fromScene(envScene).texture;
+  scene.environment = envTexture;
+
+  // ── GLOW PLANE (simulated reflection) ──
+  const planeGeo = new THREE.PlaneGeometry(6, 0.5);
+  const planeMat = new THREE.MeshBasicMaterial({
+    color: 0xc9a84c,
+    transparent: true,
+    opacity: 0.04
+  });
+  const plane = new THREE.Mesh(planeGeo, planeMat);
+  plane.rotation.x = -Math.PI / 2;
+  plane.position.y = -3;
+  scene.add(plane);
+
+  // ── ANIMATE ──
+  let mouseX = 0, mouseY = 0;
+  let targetX = 0, targetY = 0;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  const clock = new THREE.Clock();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    targetX += (mouseX * 0.4 - targetX) * 0.05;
+    targetY += (-mouseY * 0.2 - targetY) * 0.05;
+
+    penGroup.rotation.y = targetX + Math.sin(t * 0.4) * 0.15;
+    penGroup.rotation.x = 0.1 + targetY + Math.sin(t * 0.3) * 0.05;
+
+    // subtle floating
+    penGroup.position.y = Math.sin(t * 0.6) * 0.08;
+
+    // dynamic light pulse
+    fillLight.intensity = 1.5 + Math.sin(t * 1.2) * 0.3;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+// ── SCROLL REVEAL ──────────────────────────────────────────────────────────
+(function() {
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => observer.observe(el));
+})();
+</script>
+</body>
+</html>
