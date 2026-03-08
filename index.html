@@ -733,21 +733,25 @@
   window.addEventListener('resize', resize);
 
   // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  const keyLight = new THREE.DirectionalLight(0xffd080, 2.5);
+  const keyLight = new THREE.DirectionalLight(0xffd080, 3.5);
   keyLight.position.set(3, 4, 5);
   keyLight.castShadow = true;
   scene.add(keyLight);
 
-  const fillLight = new THREE.PointLight(0xc9a84c, 1.5, 20);
+  const fillLight = new THREE.PointLight(0xc9a84c, 2.5, 20);
   fillLight.position.set(-4, 2, 3);
   scene.add(fillLight);
 
-  const rimLight = new THREE.DirectionalLight(0x4488ff, 0.8);
+  const rimLight = new THREE.DirectionalLight(0x88aaff, 1.2);
   rimLight.position.set(-3, -1, -4);
   scene.add(rimLight);
+
+  const topLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  topLight.position.set(0, 6, 2);
+  scene.add(topLight);
 
   // Materials
   const brassMat = new THREE.MeshStandardMaterial({
@@ -865,12 +869,17 @@
   penGroup.rotation.z = 0.2;
   penGroup.rotation.x = 0.1;
 
-  // ── REFLECTION ENVIRONMENT ──
+  // ── REFLECTION ENVIRONMENT (r128-compatible) ──
+  // Build a simple gradient env map using a CubeRenderTarget so metallic
+  // surfaces have something to reflect without needing RoomEnvironment.
   const pmremGenerator = new THREE.PMREMGenerator(renderer);
-  pmremGenerator.compileEquirectangularShader();
-  const envScene = new THREE.RoomEnvironment();
-  const envTexture = pmremGenerator.fromScene(envScene).texture;
-  scene.environment = envTexture;
+  pmremGenerator.compileCubemapShader();
+  const envColor = new THREE.Color(0x2a1a00);
+  const envScene2 = new THREE.Scene();
+  envScene2.background = envColor;
+  const envRT = pmremGenerator.fromScene(envScene2);
+  scene.environment = envRT.texture;
+  pmremGenerator.dispose();
 
   // ── GLOW PLANE (simulated reflection) ──
   const planeGeo = new THREE.PlaneGeometry(6, 0.5);
