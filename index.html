@@ -398,11 +398,10 @@
 
     /* ── REVEAL ON SCROLL ── */
     .reveal {
-      opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      opacity: 1;
+      transform: none;
     }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal.visible { opacity: 1; transform: none; }
 
     @media (max-width: 768px) {
       nav { padding: 20px 24px; }
